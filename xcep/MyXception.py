@@ -1,13 +1,11 @@
 # 该脚本跑出来的结果和训练中展现的不一致（nfl被分到了fl中）
 from keras.applications import Xception
-from keras.preprocessing.image import load_img, save_img
 
 import cv2
 import os
 import numpy as np
 import time
 import json
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 
 MODEL_PATH = os.path.join(r'D:\cls_images\sheared\TrainModel', 'epoch2-train_loss0.000188940524822101-train_acc1.0.h5')
 # mapping = {-1: 'others', 0: 'ac', 1: 'fl', 2: 'hc', 3: 'nac', 4: 'nfl', 5: 'nhc'}

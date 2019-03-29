@@ -77,7 +77,7 @@ def plot_roc(y_true, y_pred, y_props):
 
 
 if __name__ == '__main__':
-    from UltraSonicUtility.xcep.xcep_app import test_on_img_folder
+    from xcep.xcep_app import test_on_img_folder
     y_true, y_pred, y_props = test_on_img_folder(r'D:\cls_images\sheared\test', r'D:\cls_images\sheared\error')
     acc_cm_clsrep(y_true,y_pred)
     plot_roc(y_true,y_pred,y_props)

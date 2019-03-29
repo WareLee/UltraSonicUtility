@@ -1,6 +1,8 @@
 # 使用xception在视频上做检测
 # 在图片文件夹上做test
-from UltraSonicUtility.xcep.MyXception import *
+from xcep.MyXception import *
+import cv2
+from keras.preprocessing.image import load_img,save_img
 
 def detect_from_video(video_path, target_path, visualize=False):
     """detect frame by frame"""
@@ -80,7 +82,8 @@ def test_on_img_folder(imgFolder, errFolder):
             if not imgname.endswith('.jpg'):
                 continue
             # bgr
-            img = load_img(os.path.join(cls_path, imgname))
+            # img = load_img(os.path.join(cls_path, imgname))
+            img = cv2.imread(os.path.join(cls_path, imgname))
             # resized and rescaled
             img = cv2.resize(np.array(img), dsize=(input_width, input_height)) / 255.0
             json_str = detect([img])
