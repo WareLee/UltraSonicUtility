@@ -159,12 +159,13 @@ def shear_imgs(folder,target_folder,dsize=(660,880)):
 
 if __name__ == '__main__':
     # 将图片裁剪为880x660
-    folder = r'D:\cls_images\orig'
-    target_folder = r'D:\cls_images\sheared'
+    folder = r'D:\warelee\datasets\train\xception\train\bgg'
+    target_folder = r'D:\warelee\datasets\train\xception\train\bg'
     for subf in os.listdir(folder):
         src_folder = os.path.join(folder,subf)
-        dst_folder =os.path.join(target_folder,subf)
-        shear_imgs(src_folder,dst_folder)
+        if os.path.isdir(src_folder):
+            dst_folder =os.path.join(target_folder,subf)
+            shear_imgs(src_folder,dst_folder,dsize=(660,880))
 
     # shear_imgs(r'D:\tmp\nfl', r'D:\tmp2\nfl')
 

@@ -9,7 +9,8 @@ import cv2
 import numpy as np
 import os
 
-train_data_dir = r'D:\cls_images\sheared\train'
+train_data_dir = r'D:\warelee\datasets\train\xception\train'
+cls_folder=['hc','ac','fl','nhc','nac','nfl','bg']
 # validation_data_dir = r'D:\cls_images'
 img_width, img_height = 800, 600
 batch_size = 4
@@ -17,10 +18,10 @@ nb_train_samples = 2500*7
 # nb_validation_samples = 2000
 epochs = 50
 steps = nb_train_samples // batch_size
-saving_path = r'D:\cls_images\sheared\TrainModel'
+saving_path = r'D:\warelee\datasets\TrainModel\xception'
 classes=7
-weights =os.path.join(r'D:\cls_images\sheared\TrainModel','bg-ep018-loss0.0860-val_acc0.9670.h5')
-
+weights =os.path.join(r'D:\warelee\datasets\TrainModel\xception','bg-ep018-loss0.0860-val_acc0.9670.h5')
+# weights=None
 # network
 model = Xception(include_top=True, weights=weights, input_shape=(img_height, img_width, 3), classes=classes)
 print(model.summary())
@@ -35,6 +36,7 @@ datagen = ImageDataGenerator(rescale=1. / 255,
                              fill_mode='constant'
                              )
 train_generator = datagen.flow_from_directory(train_data_dir,
+                                              classes=cls_folder,
                                               target_size=(img_height, img_width),
                                               batch_size=batch_size,
                                               shuffle=True, class_mode='categorical')

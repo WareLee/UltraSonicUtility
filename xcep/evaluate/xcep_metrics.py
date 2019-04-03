@@ -1,5 +1,5 @@
 # 模型的准确度评估，混淆矩阵，分类报告，画roc
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, roc_curve
+from sklearn.metrics import accuracy_score,auc, confusion_matrix, classification_report, roc_curve
 import matplotlib.pyplot as plt
 import json
 
@@ -68,8 +68,9 @@ def plot_roc(y_true, y_pred, y_props):
         fpr, tpr, thresholde = roc_curve(labels[v], props[v], pos_label=[v])
         print('--------------------------------')
         print(v)
-        # print(fpr)
-        # print(tpr)
+        print('auc : ',auc(fpr,tpr))
+        print(fpr)
+        print(tpr)
         thresholde = [int(float(hold) * 10000) / 10000 for hold in thresholde]
         print(thresholde)
         plt.plot(fpr, tpr, marker='o')
@@ -78,6 +79,16 @@ def plot_roc(y_true, y_pred, y_props):
 
 if __name__ == '__main__':
     from xcep.xcep_app import test_on_img_folder
-    y_true, y_pred, y_props = test_on_img_folder(r'D:\cls_images\sheared\test', r'D:\cls_images\sheared\error')
-    acc_cm_clsrep(y_true,y_pred)
-    plot_roc(y_true,y_pred,y_props)
+    y_true, y_pred, y_props = test_on_img_folder(r'D:\warelee\datasets\test\xception\hd-qc', r'D:\warelee\datasets\test\xception\tmp')
+    acc_cm_clsrep(y_true,y_pred,log_path=r'D:\warelee\datasets\test\xception\tmp\test.log')
+    with open(r'D:\warelee\datasets\test\xception\tmp\y_true.txt','w') as f:
+        f.write(json.dumps(y_true))
+    with open(r'D:\warelee\datasets\test\xception\tmp\y_pred.txt','w') as f:
+        f.write(json.dumps(y_pred))
+    with open(r'D:\warelee\datasets\test\xception\tmp\y_props.txt','w') as f:
+        f.write(json.dumps(y_props))
+    # 畫ROC曲綫
+    # y_true='../../tmp/y_true.txt'
+    # y_pred ='../../tmp/y_pred.txt'
+    # y_props='../../tmp/y_props.txt'
+    # plot_roc(y_true,y_pred,y_props)

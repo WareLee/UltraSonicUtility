@@ -182,8 +182,8 @@ def mergeFilesAndFolders2(root_dirs, dest_dir, excepted_dirs=[], csv_name='annot
                                 if record[items[-1].strip()] < howmany[items[-1].strip()]:
                                     record[items[-1].strip()] += 1
                                     # todo shan, 只保存2000张之后的图片
-                                    if record[items[-1].strip()] < 2000:
-                                        continue
+                                    # if record[items[-1].strip()] < 2500:
+                                    #     continue
                                 else:
                                     continue
                             else:
@@ -441,10 +441,8 @@ def correctCls(will_correcte_dirs, be_refered_dirs):
 
 
 if __name__ == '__main__':
-    root_dirs = r'D:\hnuMedical\ImageWare'
-    excepted_dirs = [r'D:\hnuMedical\ImageWare\deleted', r'D:\hnuMedical\ImageWare\merged_images',
-                     r'D:\hnuMedical\ImageWare\bg', r'D:\hnuMedical\ImageWare\D2', r'D:\hnuMedical\ImageWare\HD',
-                     r'D:\hnuMedical\ImageWare\HD2']
+    root_dirs = r'D:\warelee\datasets\orig'
+    excepted_dirs = [r'D:\warelee\datasets\orig\deleted']
     # delete_json = r'D:\hnuMedical\ImageWares\deleted\jibiao.csv'
 
     # 更新csv,去掉image不存在的记录，去掉bbox或者存在-1标识的记录,删除delete指定的记录
@@ -476,9 +474,10 @@ if __name__ == '__main__':
     # print(result)
 
     # test mergeFilesAndFolders 丘脑标准': 49, '腹部标准': 68
-    mergeFilesAndFolders2(root_dirs, dest_dir=r'D:\tmp', excepted_dirs=excepted_dirs, sep_cls_folder=True, 丘脑标准=3000,
-                          腹部标准=3000, 股骨标准=3000, 丘脑非标准=3000, 腹部非标准=3000, 股骨非标准=3000)
-    # mergeFilesAndFolders(root_dirs,r'C:\Users\WareLee\Desktop\test\images_merged')
+    mergeFilesAndFolders2(root_dirs, dest_dir=r'D:\warelee\datasets\train\xception\ogg', excepted_dirs=excepted_dirs, sep_cls_folder=True, 丘脑标准=2500,
+                          腹部标准=2500, 股骨标准=2500, 丘脑非标准=2500, 腹部非标准=2500, 股骨非标准=2500)
+    # mergeFilesAndFolders(root_dirs,dest_dir=r'D:\warelee\datasets\train\xception\og', excepted_dirs=excepted_dirs,丘脑标准=2500,
+    #                       腹部标准=2500, 股骨标准=2500, 丘脑非标准=2500, 腹部非标准=2500, 股骨非标准=2500)
 
     # test updateAllCsv
     # roor_dirs = r'D:\hnuMedical2\ImageWares'

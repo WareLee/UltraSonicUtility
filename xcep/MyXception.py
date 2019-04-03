@@ -7,7 +7,7 @@ import numpy as np
 import time
 import json
 
-MODEL_PATH = os.path.join(r'D:\cls_images\sheared\TrainModel', 'epoch2-train_loss0.000188940524822101-train_acc1.0.h5')
+MODEL_PATH = os.path.join(r'D:\warelee\datasets\TrainModel\xception', 'epoch2-train_loss0.000188940524822101-train_acc1.0.h5')
 # mapping = {-1: 'others', 0: 'ac', 1: 'fl', 2: 'hc', 3: 'nac', 4: 'nfl', 5: 'nhc'}
 # std2nstd_map = {0: 3, 1: 4, 2:5 }
 mapping = {0: 'ac', 1: 'bg', 2: 'fl', 3: 'hc', 4: 'nac', 5: 'nfl', 6: 'nhc'}
@@ -21,7 +21,6 @@ log_path = 'evaluate_sheared.log'
 # image shape of network input
 input_height, input_width = 600, 800
 classes = 7
-
 
 def init():
     model_path = MODEL_PATH
