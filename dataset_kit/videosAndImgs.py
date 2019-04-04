@@ -3,30 +3,8 @@ import cv2
 import os
 import numpy as np
 import shutil
+from scipy import misc
 
-
-def get_english_cls_name(clsname):
-    if clsname.find('其他') >= 0:
-        clsname = 'others'
-    elif clsname.find('腹部') >= 0:
-        if clsname.find('非标准') >= 0:
-            clsname = 'nac'
-        else:
-            clsname = 'ac'
-    elif clsname.find('股骨') >= 0:
-        if clsname.find('非标准') >= 0:
-            clsname = 'nfl'
-        else:
-            clsname = 'fl'
-    elif clsname.find('丘脑') >= 0:
-        if clsname.find('非标准') >= 0:
-            clsname = 'nhc'
-        else:
-            clsname = 'hc'
-    else:
-        clsname='dontcare'
-
-    return clsname
 
 def sampling(src_folder,dst_folder,sep=2):
     """
@@ -45,8 +23,30 @@ def sampling(src_folder,dst_folder,sep=2):
         if imgnames[i].endswith('.jpg'):
             shutil.copy(os.path.join(src_folder,imgnames[i]),os.path.join(dst_folder,imgnames[i]))
 
+def _default_sampling(pre,cur):
+    """根据前一次采用了的frame信息(编号，类别)，和当前frame的信息(编号，类别)，判断是否采取当前frame
+    1.类别不同，取
+    2.类别相同：均为某一类别的非标准，编号间隔5张取一张
+                均为基本标准，间隔4张取一张
+                均为其他，间隔5张取一张
+                均为某一类的标准，编号间隔3张取一张
+    """
+    pre_num,pre_cls=pre
+    cur_num,cur_cls = cur
+    if cur_cls!=pre_cls:
+        return True
+    else:
+        if cur_cls.find('非')>=0:
+            return cur_num-pre_num>=5
+        elif cur_cls.find('基本')>=0:
+            return cur_num - pre_num >= 4
+        elif cur_cls.find('其他')>=0:
+            return cur_num - pre_num >= 5
+        else:
+            return cur_num - pre_num >= 3
 
-def extract_imgs_from_vido(video_path, label_path, target_path, encoding='gbk'):
+
+def extract_imgs_from_vido(video_path, label_path, target_path, encoding='gbk',strategy=_default_sampling):
     """提取带标注文件的（单个）视频中的图片，到指定目录下，分门别类的存放
 
     :param video_path:   视频路径名
@@ -74,6 +74,9 @@ def extract_imgs_from_vido(video_path, label_path, target_path, encoding='gbk'):
     cur_id = 1
     cur_frame = np.zeros([height, width, 3], np.uint8)
 
+    # 之前取得图片
+    pre_num,pre_cls=0,'初始'
+
     # 读取视频对应的标注信息
     lines = []
     with open(label_path, encoding=encoding) as f:
@@ -82,18 +85,30 @@ def extract_imgs_from_vido(video_path, label_path, target_path, encoding='gbk'):
         # 当前图片名
         cur_frame_name = name_prefix + '_' + str(cur_id) + '.jpg'
         # 当前图片名,标注的类别(转为非中文)
+        if cur_id>len(lines):
+            break
         labeled_imgname, clsname = lines[cur_id - 1].strip().split(' ')
-        clsname = get_english_cls_name(clsname)
 
         if cur_frame_name.strip() != labeled_imgname:
-            print('Video frame name does not match labeled img name: {} v.s {}'.format(cur_frame_name, labeled_imgname))
-            exit()
+            print('Error: Video frame name does not match labeled img name: {} v.s {}'.format(cur_frame_name, labeled_imgname))
+            break
+
+        # 根据策略判断存不存
+        if strategy!=None:
+            if strategy((pre_num,pre_cls),(cur_id,clsname)):
+                pre_num=cur_id
+                pre_cls=clsname
+            else:
+                cur_id += 1
+                continue
+
         # 生成对应类别存放目录
         cls_path = os.path.join(target_path, clsname)
         if not os.path.exists(cls_path):
-            os.mkdir(cls_path)
+            os.makedirs(cls_path)
         # 存放图片
-        cv2.imwrite(os.path.join(cls_path, cur_frame_name), cur_frame)
+        misc.imsave(os.path.join(cls_path, cur_frame_name),cur_frame)
+        # cv2.imwrite(os.path.join(cls_path, cur_frame_name), cur_frame)
 
         cur_id += 1
 
@@ -159,13 +174,13 @@ def shear_imgs(folder,target_folder,dsize=(660,880)):
 
 if __name__ == '__main__':
     # 将图片裁剪为880x660
-    folder = r'D:\warelee\datasets\train\xception\train\bgg'
-    target_folder = r'D:\warelee\datasets\train\xception\train\bg'
-    for subf in os.listdir(folder):
-        src_folder = os.path.join(folder,subf)
-        if os.path.isdir(src_folder):
-            dst_folder =os.path.join(target_folder,subf)
-            shear_imgs(src_folder,dst_folder,dsize=(660,880))
+    # folder = r'D:\warelee\datasets\train\xception\train\bgg'
+    # target_folder = r'D:\warelee\datasets\train\xception\train\bg'
+    # for subf in os.listdir(folder):
+    #     src_folder = os.path.join(folder,subf)
+    #     if os.path.isdir(src_folder):
+    #         dst_folder =os.path.join(target_folder,subf)
+    #         shear_imgs(src_folder,dst_folder,dsize=(660,880))
 
     # shear_imgs(r'D:\tmp\nfl', r'D:\tmp2\nfl')
 
@@ -176,10 +191,10 @@ if __name__ == '__main__':
     # extract_imgs_from_vido(video_path, label_path, target_path)
 
     # 提取指定文件夹下的所有视频图像
-    # video_folder =r'D:\originalmedicalimgs\16'
-    # label_folder =r'D:\originalmedicalimgs\16\label'
-    # target_path = r'D:\originalmedicalimgs\16\imgs'
-    # extract_imgs_from_videos(video_folder,label_folder,target_path)
+    video_folder =r'C:\Users\WareLee\Desktop\test'
+    label_folder =r'C:\Users\WareLee\Desktop\test\label'
+    target_path = r'C:\Users\WareLee\Desktop\test\imgs'
+    extract_imgs_from_videos(video_folder,label_folder,target_path)
 
     # 采样
     # src_folder = r'D:\originalmedicalimgs\16\imgs\fl'
