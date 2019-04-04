@@ -439,6 +439,63 @@ def correctCls(will_correcte_dirs, be_refered_dirs):
         with open(csv, 'w', encoding='utf-8') as ff:
             ff.writelines(lines)
 
+def savingByCls(csvs,saving_dir,deletefromjsonf=None):
+    """
+    根據原始csv文件對images分門別類的存放
+    :param csvs:
+    :param saving_dir:
+    :param deletefromjsonf: 不需要考慮的圖片信息的json文件路徑
+    :return:
+    """
+    temp =[]
+    for csv in csvs:
+        if os.path.abspath(csv).find(os.path.abspath(saving_dir))<0:
+            temp.append(csv)
+    csvs = temp
+
+    exceptedimgs =[]
+    # 根據deletefromjson指定了新數據中不需要的圖片名
+    if deletefromjsonf is not None:
+        import json
+        with open(deletefromjsonf,encoding='utf-8') as f:
+            jsonstr = f.read()
+        jsondic = json.loads(jsonstr)
+        exceptedimgs = jsondic.keys()
+
+    # if saving_dir exists already,delete all subs of it
+    if os.path.exists(saving_dir):
+        print('Cleanning the folder: {} ... '.format(saving_dir))
+        for it in os.listdir(saving_dir):
+            todelete =os.path.join(saving_dir,it)
+            if os.path.isdir(todelete):
+                shutil.rmtree(todelete)
+            elif os.path.isfile(todelete):
+                os.remove(todelete)
+            else:
+                print('Warnning : {} clound not be cleaned .'.format(todelete))
+    else:
+        os.makedirs(saving_dir)
+
+    print('Copping images by classification of annotations.csv ....')
+    for csv in csvs:
+        with open(csv,encoding='utf-8') as f:
+            for line in f.readlines():
+                items = line.strip().split(',')
+                # 是否圖片是不需要的
+                if items[0] in exceptedimgs:
+                    continue
+                # 確定屬於特定類別圖片的目錄是否存在
+                clspath = os.path.join(saving_dir,items[-1])
+                if not os.path.exists(clspath):
+                    os.makedirs(clspath)
+                # 複製特定類別圖片到對應目錄並在追加對應目錄下的csv文件
+                srcimg = os.path.join(os.path.split(csv)[0],items[0])
+                if os.path.exists(srcimg):
+                    shutil.copyfile(srcimg,os.path.join(clspath,items[0]))
+                    # TODO 頻繁開閉文件，有待優化
+                    with open(os.path.join(clspath,'annotations.csv'),'a+',encoding='utf-8') as tmpf:
+                        tmpf.write(line)
+
 
 if __name__ == '__main__':
     root_dirs = r'D:\warelee\datasets\orig'
@@ -489,3 +546,8 @@ if __name__ == '__main__':
     # result = statisticCls(root_dirs,excepted_dirs=excepted_dirs)
     # result = mergeFilesAndFolders(root_dirs, excepted_dirs=excepted_dirs)
     # print(result)
+
+    # 根據csv文件將圖片分類存放並生成對應的類別的csv文件
+    # csvs = getAllCsv(root_dirs)
+    # saving_dir = r'D:\warelee\HD-QC\blycls'
+    # savingByCls2(csvs, saving_dir, deletefromjsonf=None)
