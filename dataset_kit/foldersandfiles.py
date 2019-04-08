@@ -182,8 +182,8 @@ def mergeFilesAndFolders2(root_dirs, dest_dir, excepted_dirs=[], csv_name='annot
                                 if record[items[-1].strip()] < howmany[items[-1].strip()]:
                                     record[items[-1].strip()] += 1
                                     # todo shan, 只保存2000张之后的图片
-                                    # if record[items[-1].strip()] < 2500:
-                                    #     continue
+                                    if record[items[-1].strip()] < 2500:
+                                        continue
                                 else:
                                     continue
                             else:
@@ -272,6 +272,9 @@ def mergeFilesAndFolders(root_dirs, dest_dir, excepted_dirs=[], csv_name='annota
         if csv.find('autocsv') >= 0:
             csvs.remove(csv)
             csvs.append(csv)
+        if csv.find('HD-QC') >= 0:
+            csvs.remove(csv)
+            csvs.insert(0,csv)
 
     # 如果源图片目录中有目的地目录，要去除
     for it in csvs.copy():
@@ -485,7 +488,11 @@ def savingByCls(csvs,saving_dir,deletefromjsonf=None):
                 if items[0] in exceptedimgs:
                     continue
                 # 確定屬於特定類別圖片的目錄是否存在
-                clspath = os.path.join(saving_dir,items[-1])
+                if items[-1]=='':
+                    label_folder = 'bg'
+                else:
+                    label_folder=items[-1]
+                clspath = os.path.join(saving_dir,label_folder)
                 if not os.path.exists(clspath):
                     os.makedirs(clspath)
                 # 複製特定類別圖片到對應目錄並在追加對應目錄下的csv文件
@@ -498,8 +505,8 @@ def savingByCls(csvs,saving_dir,deletefromjsonf=None):
 
 
 if __name__ == '__main__':
-    root_dirs = r'D:\warelee\datasets\orig'
-    excepted_dirs = [r'D:\warelee\datasets\orig\deleted']
+    root_dirs = r'D:\warelee\datasets\orig\HD-QC'
+    # excepted_dirs = [r'D:\warelee\datasets\orig\deleted']
     # delete_json = r'D:\hnuMedical\ImageWares\deleted\jibiao.csv'
 
     # 更新csv,去掉image不存在的记录，去掉bbox或者存在-1标识的记录,删除delete指定的记录
@@ -531,10 +538,10 @@ if __name__ == '__main__':
     # print(result)
 
     # test mergeFilesAndFolders 丘脑标准': 49, '腹部标准': 68
-    mergeFilesAndFolders2(root_dirs, dest_dir=r'D:\warelee\datasets\train\xception\ogg', excepted_dirs=excepted_dirs, sep_cls_folder=True, 丘脑标准=2500,
+    # mergeFilesAndFolders2(root_dirs, dest_dir=r'D:\warelee\datasets\test\xception\test', excepted_dirs=excepted_dirs, sep_cls_folder=True, 丘脑标准=3000,
+    #                       腹部标准=3000, 股骨标准=3000, 丘脑非标准=3000, 腹部非标准=3000, 股骨非标准=3000)
+    mergeFilesAndFolders(root_dirs,dest_dir=r'D:\warelee\datasets\train\xception\og', excepted_dirs=excepted_dirs,丘脑标准=2500,
                           腹部标准=2500, 股骨标准=2500, 丘脑非标准=2500, 腹部非标准=2500, 股骨非标准=2500)
-    # mergeFilesAndFolders(root_dirs,dest_dir=r'D:\warelee\datasets\train\xception\og', excepted_dirs=excepted_dirs,丘脑标准=2500,
-    #                       腹部标准=2500, 股骨标准=2500, 丘脑非标准=2500, 腹部非标准=2500, 股骨非标准=2500)
 
     # test updateAllCsv
     # roor_dirs = r'D:\hnuMedical2\ImageWares'
@@ -548,6 +555,6 @@ if __name__ == '__main__':
     # print(result)
 
     # 根據csv文件將圖片分類存放並生成對應的類別的csv文件
-    # csvs = getAllCsv(root_dirs)
-    # saving_dir = r'D:\warelee\HD-QC\blycls'
-    # savingByCls2(csvs, saving_dir, deletefromjsonf=None)
+    csvs = getAllCsv(root_dirs)
+    saving_dir = r'D:\warelee\datasets\orig\tmp'
+    savingByCls(csvs, saving_dir, deletefromjsonf=None)

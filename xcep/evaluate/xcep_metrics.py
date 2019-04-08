@@ -5,7 +5,17 @@ import json
 import numpy as np
 
 
-def acc_cm_clsrep(y_true, y_pred, log_path=''):
+def acc_cm_clsrep(y_true, y_pred, log_path='',abnormal=False):
+    # 异常模式下，视非标准到非标准的预测为正确
+    if abnormal:
+        nstd = {'nac', 'nhc', 'nfl', 'afl','bg'}
+        for i in range(len(y_true)):
+            if y_true[i] in nstd:
+                y_true[i]='nstd'
+            if y_pred[i] in nstd:
+                y_pred[i]='nstd'
+
+
     # 准确度评估，混淆矩阵，分类报告
     accu = accuracy_score(y_true, y_pred)
     cfm = confusion_matrix(y_true, y_pred)
@@ -119,15 +129,28 @@ def plot_roc(y_label, y_score):
     plt.show()
 
 if __name__ == '__main__':
+    import os
+    import json
     from xcep.xcep_app import test_on_img_folder
-    y_true, y_pred, y_props = test_on_img_folder(r'D:\warelee\datasets\test\xception\hd-qc', r'D:\warelee\datasets\test\xception\tmp')
-    acc_cm_clsrep(y_true,y_pred,log_path=r'D:\warelee\datasets\test\xception\tmp\test.log')
-    with open(r'D:\warelee\datasets\test\xception\tmp\y_true.txt','w') as f:
+    img_folder = r'D:\warelee\datasets\test\xception\hd_test'
+    err_parent= 'nfl_epo4_hd_test'
+    classes = ['hc', 'ac', 'fl', 'nhc', 'nac', 'nfl', 'bg']
+    y_true, y_pred, y_props = test_on_img_folder(img_folder, os.path.join(r'D:\warelee\datasets\test\xception\tmp',err_parent),classes=classes)
+    acc_cm_clsrep(y_true,y_pred,log_path=os.path.join(r'D:\warelee\datasets\test\xception\tmp',err_parent,err_parent+'.log'))
+    with open(os.path.join(r'D:\warelee\datasets\test\xception\tmp',err_parent,'y_true.txt'),'w') as f:
         f.write(json.dumps(y_true))
-    with open(r'D:\warelee\datasets\test\xception\tmp\y_pred.txt','w') as f:
+    with open(os.path.join(r'D:\warelee\datasets\test\xception\tmp',err_parent,'y_pred.txt'),'w') as f:
         f.write(json.dumps(y_pred))
-    with open(r'D:\warelee\datasets\test\xception\tmp\y_props.txt','w') as f:
+    with open(os.path.join(r'D:\warelee\datasets\test\xception\tmp',err_parent,'y_props.txt'),'w') as f:
         f.write(json.dumps(y_props))
+
+    # parent_p = r'D:\warelee\datasets\test\xception\tmp\nfl_epo4_test'
+    # with open(os.path.join(parent_p,'y_true.txt')) as f:
+    #     y_true = json.loads(f.read())
+    # with open(os.path.join(parent_p,'y_pred.txt')) as f:
+    #     y_pred = json.loads(f.read())
+    # acc_cm_clsrep(y_true,y_pred,log_path=os.path.join(parent_p,'nfl_epo4_test_ab.log'),abnormal=True)
+
     # 畫ROC曲綫
     # y_true='../../tmp/y_true.txt'
     # y_pred ='../../tmp/y_pred.txt'

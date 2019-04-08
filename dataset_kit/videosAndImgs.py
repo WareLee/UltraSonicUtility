@@ -174,15 +174,15 @@ def shear_imgs(folder,target_folder,dsize=(660,880)):
 
 if __name__ == '__main__':
     # 将图片裁剪为880x660
-    # folder = r'D:\warelee\datasets\train\xception\train\bgg'
-    # target_folder = r'D:\warelee\datasets\train\xception\train\bg'
-    # for subf in os.listdir(folder):
-    #     src_folder = os.path.join(folder,subf)
-    #     if os.path.isdir(src_folder):
-    #         dst_folder =os.path.join(target_folder,subf)
-    #         shear_imgs(src_folder,dst_folder,dsize=(660,880))
+    folder = r'D:\warelee\datasets\test\xception\hd_tes2'
+    target_folder = r'D:\warelee\datasets\test\xception\hd_test'
+    for subf in os.listdir(folder):
+        src_folder = os.path.join(folder,subf)
+        if os.path.isdir(src_folder):
+            dst_folder =os.path.join(target_folder,subf)
+            shear_imgs(src_folder,dst_folder,dsize=(660,880))
 
-    # shear_imgs(r'D:\tmp\nfl', r'D:\tmp2\nfl')
+    # shear_imgs(r'G:\tmp\bg500', r'D:\warelee\datasets\test\xception\test\bg')
 
     # 从单个视频中提取图片，并根据标准文件分门别类存放
     # video_path = r'D:\cur_work\ultrasound\video\20180202_102752_236.wmv'
@@ -191,10 +191,10 @@ if __name__ == '__main__':
     # extract_imgs_from_vido(video_path, label_path, target_path)
 
     # 提取指定文件夹下的所有视频图像
-    video_folder =r'C:\Users\WareLee\Desktop\test'
-    label_folder =r'C:\Users\WareLee\Desktop\test\label'
-    target_path = r'C:\Users\WareLee\Desktop\test\imgs'
-    extract_imgs_from_videos(video_folder,label_folder,target_path)
+    # video_folder =r'C:\Users\WareLee\Desktop\test'
+    # label_folder =r'C:\Users\WareLee\Desktop\test\label'
+    # target_path = r'C:\Users\WareLee\Desktop\test\imgs'
+    # extract_imgs_from_videos(video_folder,label_folder,target_path)
 
     # 采样
     # src_folder = r'D:\originalmedicalimgs\16\imgs\fl'

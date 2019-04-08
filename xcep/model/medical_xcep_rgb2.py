@@ -18,9 +18,9 @@ nb_train_samples = 2500*7
 # nb_validation_samples = 2000
 epochs = 50
 steps = nb_train_samples // batch_size
-saving_path = r'D:\warelee\datasets\TrainModel\xception'
+saving_path = r'D:\warelee\datasets\TrainModel\xception\nfl'
 classes=7
-weights =os.path.join(r'D:\warelee\datasets\TrainModel\xception','bg-ep018-loss0.0860-val_acc0.9670.h5')
+weights =os.path.join(r'D:\warelee\datasets\TrainModel\xception\nfl','epoch4-train_loss0.160-train_acc1.000.h5')
 # weights=None
 # network
 model = Xception(include_top=True, weights=weights, input_shape=(img_height, img_width, 3), classes=classes)

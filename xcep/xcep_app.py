@@ -68,7 +68,7 @@ def detect_on_video_folder(videoFolder, targetPath, visualize=False):
         detect_from_video(avi, targetPath, visualize=visualize)
 
 
-def test_on_img_folder(imgFolder, errFolder):
+def test_on_img_folder(imgFolder, errFolder,classes=None):
     """imgFolder下的目錄必須是mappding中的值"""
     init()
 
@@ -76,7 +76,14 @@ def test_on_img_folder(imgFolder, errFolder):
     y_pred = []
     y_props = []
     path = imgFolder
-    for clsname in os.listdir(path):
+    if classes==None:
+        clsnames=[]
+        for it in os.listdir(path):
+            if os.path.isdir(os.path.join(path,it)):
+                clsnames.append(it)
+    else:
+        clsnames = classes
+    for clsname in clsnames:
         cls_path = os.path.join(path, clsname)
         for imgname in os.listdir(cls_path):
             if not imgname.endswith('.jpg'):
@@ -97,7 +104,7 @@ def test_on_img_folder(imgFolder, errFolder):
 
             # store error
             if pred_label != clsname:
-                error_path = os.path.join(errFolder, clsname, 'error')
+                error_path = os.path.join(errFolder, 'error', clsname)
                 if not os.path.exists(error_path):
                     os.makedirs(error_path)
                 extra = json.loads(json_str)
