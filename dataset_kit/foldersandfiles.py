@@ -152,6 +152,9 @@ def mergeFilesAndFolders2(root_dirs, dest_dir, excepted_dirs=[], csv_name='annot
         if csv.find('autocsv') >= 0:
             csvs.remove(csv)
             csvs.append(csv)
+        if csv.find('HD-QC') >= 0:
+            csvs.remove(csv)
+            csvs.insert(0,csv)
 
     # 如果源图片目录中有目的地目录，要去除
     for it in csvs.copy():
@@ -182,8 +185,8 @@ def mergeFilesAndFolders2(root_dirs, dest_dir, excepted_dirs=[], csv_name='annot
                                 if record[items[-1].strip()] < howmany[items[-1].strip()]:
                                     record[items[-1].strip()] += 1
                                     # todo shan, 只保存2000张之后的图片
-                                    if record[items[-1].strip()] < 2500:
-                                        continue
+                                    # if record[items[-1].strip()] < 2500:
+                                    #     continue
                                 else:
                                     continue
                             else:
@@ -194,7 +197,10 @@ def mergeFilesAndFolders2(root_dirs, dest_dir, excepted_dirs=[], csv_name='annot
 
                         # 是否根据不同类别单独存放图片
                         if sep_cls_folder:
-                            cls_path = os.path.join(dest_dir, items[-1].strip())
+                            _cls_folder = items[-1].strip()
+                            if _cls_folder =='':
+                                _cls_folder='bg'
+                            cls_path = os.path.join(dest_dir, _cls_folder)
                             if not os.path.exists(cls_path):
                                 os.mkdir(cls_path)
                         else:
@@ -505,8 +511,8 @@ def savingByCls(csvs,saving_dir,deletefromjsonf=None):
 
 
 if __name__ == '__main__':
-    root_dirs = r'D:\warelee\datasets\orig\HD-QC'
-    # excepted_dirs = [r'D:\warelee\datasets\orig\deleted']
+    root_dirs = r'F:\workspace\ultrasonic\hnuMedical2\ImageWare'
+    excepted_dirs = [r'F:\workspace\ultrasonic\hnuMedical2\ImageWare\deleted',r'F:\workspace\ultrasonic\hnuMedical2\ImageWare\merged']
     # delete_json = r'D:\hnuMedical\ImageWares\deleted\jibiao.csv'
 
     # 更新csv,去掉image不存在的记录，去掉bbox或者存在-1标识的记录,删除delete指定的记录
@@ -538,10 +544,9 @@ if __name__ == '__main__':
     # print(result)
 
     # test mergeFilesAndFolders 丘脑标准': 49, '腹部标准': 68
-    # mergeFilesAndFolders2(root_dirs, dest_dir=r'D:\warelee\datasets\test\xception\test', excepted_dirs=excepted_dirs, sep_cls_folder=True, 丘脑标准=3000,
-    #                       腹部标准=3000, 股骨标准=3000, 丘脑非标准=3000, 腹部非标准=3000, 股骨非标准=3000)
-    mergeFilesAndFolders(root_dirs,dest_dir=r'D:\warelee\datasets\train\xception\og', excepted_dirs=excepted_dirs,丘脑标准=2500,
-                          腹部标准=2500, 股骨标准=2500, 丘脑非标准=2500, 腹部非标准=2500, 股骨非标准=2500)
+    # mergeFilesAndFolders2(root_dirs, dest_dir=r'F:\workspace\ultrasonic\hnuMedical2\ImageWare\merged_2500', excepted_dirs=excepted_dirs, sep_cls_folder=True, 丘脑标准=2500,
+    #                       腹部标准=2500, 股骨标准=2500, 丘脑非标准=2500, 腹部非标准=2500, 股骨非标准=2500)
+    # mergeFilesAndFolders(root_dirs,dest_dir=r'F:\workspace\ultrasonic\hnuMedical2\ImageWare\merged', excepted_dirs=excepted_dirs)
 
     # test updateAllCsv
     # roor_dirs = r'D:\hnuMedical2\ImageWares'
@@ -555,6 +560,6 @@ if __name__ == '__main__':
     # print(result)
 
     # 根據csv文件將圖片分類存放並生成對應的類別的csv文件
-    csvs = getAllCsv(root_dirs)
-    saving_dir = r'D:\warelee\datasets\orig\tmp'
+    csvs = getAllCsv(root_dirs,excepted_dirs=excepted_dirs)
+    saving_dir = r'F:\workspace\ultrasonic\hnuMedical2\ImageWare\merged_by_cls'
     savingByCls(csvs, saving_dir, deletefromjsonf=None)

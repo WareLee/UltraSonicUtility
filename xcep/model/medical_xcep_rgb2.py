@@ -27,13 +27,15 @@ model = Xception(include_top=True, weights=weights, input_shape=(img_height, img
 print(model.summary())
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
+def _preprocessing_function(np_img):
+    return np_img/127. -1
 # data prepare
-datagen = ImageDataGenerator(rescale=1. / 255,
-                             rotation_range=10,
+datagen = ImageDataGenerator(rotation_range=10,
                              width_shift_range=0.1,
                              zoom_range=0.1,
                              horizontal_flip=True,
-                             fill_mode='constant'
+                             fill_mode='constant',
+                             preprocessing_function=_preprocessing_function
                              )
 train_generator = datagen.flow_from_directory(train_data_dir,
                                               classes=cls_folder,
