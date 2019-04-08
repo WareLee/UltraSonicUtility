@@ -2,6 +2,7 @@
 from sklearn.metrics import accuracy_score,auc, confusion_matrix, classification_report, roc_curve
 import matplotlib.pyplot as plt
 import json
+import numpy as np
 
 
 def acc_cm_clsrep(y_true, y_pred, log_path=''):
@@ -23,7 +24,7 @@ def acc_cm_clsrep(y_true, y_pred, log_path=''):
     print(clsrep)
 
 
-def plot_roc(y_true, y_pred, y_props):
+def plot_roc_xcep(y_true, y_pred, y_props):
     """为xception定制的画roc"""
 
     # 如果输入的是保存结果的文件路径
@@ -76,6 +77,46 @@ def plot_roc(y_true, y_pred, y_props):
         plt.plot(fpr, tpr, marker='o')
         plt.show()
 
+# 通用版本
+def plot_roc(y_label, y_score):
+
+    # used for roc curve
+    # y_score = [[], [], []]
+    # y_label = [[], [], []]
+    plt.figure()
+
+    lw = 2
+
+    colors = ['aqua', 'darkorange', 'cornflowerblue']
+    label_names = ['HC', 'AC', 'FL']
+    for label, score, color, name in zip(y_label, y_score, colors, label_names):
+        fpr, tpr, thresholds = roc_curve(label, score)
+        roc_auc = auc(fpr, tpr)
+
+        # threshold
+        right_index = (tpr + (1 - fpr) - 1)
+
+        idx = np.argmax(right_index)
+        tpr_val = tpr[idx]
+        fpr_val = fpr[idx]
+        thresh = thresholds[idx]
+
+        plt.plot(fpr, tpr, color=color, lw=lw, label=name + '(auc: {:.2f})'.format(roc_auc))
+        plt.plot(fpr_val, tpr_val, 'ro')
+        label = '{:.2f}: ({:.2f}, {:.2f})'.format(thresh, fpr_val, tpr_val)
+        plt.text(fpr_val, tpr_val, label)
+
+    plt.plot([0, 1], [0, 1], color='navy', linestyle='--', lw=lw)
+
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC Curve')
+    plt.legend(loc="lower right")
+    plt.savefig('roc.png')
+
+    plt.show()
 
 if __name__ == '__main__':
     from xcep.xcep_app import test_on_img_folder
@@ -91,4 +132,4 @@ if __name__ == '__main__':
     # y_true='../../tmp/y_true.txt'
     # y_pred ='../../tmp/y_pred.txt'
     # y_props='../../tmp/y_props.txt'
-    # plot_roc(y_true,y_pred,y_props)
+    # plot_roc_xcep(y_true,y_pred,y_props)
