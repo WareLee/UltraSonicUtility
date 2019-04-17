@@ -23,27 +23,60 @@ def sampling(src_folder,dst_folder,sep=2):
         if imgnames[i].endswith('.jpg'):
             shutil.copy(os.path.join(src_folder,imgnames[i]),os.path.join(dst_folder,imgnames[i]))
 
-def _default_sampling(pre,cur):
-    """根据前一次采用了的frame信息(编号，类别)，和当前frame的信息(编号，类别)，判断是否采取当前frame
-    1.类别不同，取
-    2.类别相同：均为某一类别的非标准，编号间隔5张取一张
-                均为基本标准，间隔4张取一张
-                均为其他，间隔5张取一张
-                均为某一类的标准，编号间隔3张取一张
+def _default_sampling(label_path):
+    """返回一个要取得集合，下标从1开始，表示取第1张图片
+    连续出现的非标准和基本标准类别，至少取一张，每间隔4张取一张，从靠近标准的方向开始取；
+    连续出现的其他，每间隔5张取一张；
+    连续出现的标准，至少取一张，去掉头尾各两张之后，每间隔2张取一张
+    :param label_path:
+    :return:
     """
-    pre_num,pre_cls=pre
-    cur_num,cur_cls = cur
-    if cur_cls!=pre_cls:
-        return True
-    else:
-        if cur_cls.find('非')>=0:
-            return cur_num-pre_num>=5
-        elif cur_cls.find('基本')>=0:
-            return cur_num - pre_num >= 4
-        elif cur_cls.find('其他')>=0:
-            return cur_num - pre_num >= 5
+    with open(label_path) as f:
+        lines = f.readlines()
+    statistics = []
+    for i,line in enumerate(lines):
+        clsname = line.strip().split(' ')[-1]
+        if len(statistics)>0 and clsname==statistics[len(statistics)-1][0]:
+            statistics[len(statistics) - 1][1]+=1
         else:
-            return cur_num - pre_num >= 3
+            tup = [clsname,1]
+            statistics.append(tup)
+    results = []
+    sum =0
+    is_pre_std = False
+    for clsname,count in statistics:
+        if clsname.find('非')>=0 or clsname.find('基本')>=0:
+            if is_pre_std:
+                if count <= 4:
+                    results.append(sum + 1)
+                else:
+                    for i in range(1, count + 1, 4):
+                        results.append(sum + i)
+            else:
+                if count <= 4:
+                    results.append(sum + count)
+                else:
+                    for i in range(count, 0, -4):
+                        results.append(sum + i)
+            is_pre_std = False
+        elif clsname.find('其他')>=0:
+            if count<=5:
+                results.append(sum+count)
+            else:
+                for i in range(1,count+1,5):
+                    results.append(sum+i)
+            is_pre_std = False
+        else:
+            if count<=4:
+                results.append(sum+(count+1)//2)
+            else:
+                for i in range(3,count-1,2):
+                    results.append(sum+i)
+            is_pre_std = True
+
+        sum += count
+
+    return results
 
 
 def extract_imgs_from_vido(video_path, label_path, target_path, encoding='gbk',strategy=_default_sampling):
@@ -81,6 +114,10 @@ def extract_imgs_from_vido(video_path, label_path, target_path, encoding='gbk',s
     lines = []
     with open(label_path, encoding=encoding) as f:
         lines = f.readlines()
+
+    if strategy != None:
+        need2capid = strategy(label_path)
+
     while reader.read(cur_frame):
         # 当前图片名
         cur_frame_name = name_prefix + '_' + str(cur_id) + '.jpg'
@@ -95,11 +132,8 @@ def extract_imgs_from_vido(video_path, label_path, target_path, encoding='gbk',s
 
         # 根据策略判断存不存
         if strategy!=None:
-            if strategy((pre_num,pre_cls),(cur_id,clsname)):
-                pre_num=cur_id
-                pre_cls=clsname
-            else:
-                cur_id += 1
+            if cur_id not in need2capid:
+                cur_id+=1
                 continue
 
         # 生成对应类别存放目录
@@ -148,7 +182,7 @@ def extract_imgs_from_videos(video_folder,label_folder,target_path,encoding='gbk
 
 
 def shear_imgs(folder,target_folder,dsize=(660,880)):
-    """裁取原始大图的指定大小的中央部分"""
+    """裁取原始大图的指定大小的中央部分，当大小不够时缩放"""
     if not os.path.exists(target_folder):
         os.makedirs(target_folder)
 
@@ -174,8 +208,8 @@ def shear_imgs(folder,target_folder,dsize=(660,880)):
 
 if __name__ == '__main__':
     # 将图片裁剪为880x660
-    folder = r'D:\warelee\datasets\test\xception\hd_tes2'
-    target_folder = r'D:\warelee\datasets\test\xception\hd_test'
+    folder = r'F:\workspace\ultrasonic\hnuMedical2\ImageWare\merged_all_by_cls'
+    target_folder = r'F:\workspace\ultrasonic\hnuMedical2\ImageWare\merged_all_by_cls_sheared'
     for subf in os.listdir(folder):
         src_folder = os.path.join(folder,subf)
         if os.path.isdir(src_folder):
@@ -191,6 +225,14 @@ if __name__ == '__main__':
     # extract_imgs_from_vido(video_path, label_path, target_path)
 
     # 提取指定文件夹下的所有视频图像
+    # root_folder = r'F:\workspace\医院数据\arranged_videos'
+    # target_path = r'F:\workspace\医院数据\arranged_imgs'
+    # video_folders =[]
+    # for folder in os.listdir(root_folder):
+    #     video_folders.append(os.path.join(root_folder,folder))
+    # for vide_path in video_folders:
+    #     if os.path.isdir(vide_path):
+    #         extract_imgs_from_videos(vide_path,os.path.join(vide_path,'label'),target_path)
     # video_folder =r'C:\Users\WareLee\Desktop\test'
     # label_folder =r'C:\Users\WareLee\Desktop\test\label'
     # target_path = r'C:\Users\WareLee\Desktop\test\imgs'
@@ -200,3 +242,8 @@ if __name__ == '__main__':
     # src_folder = r'D:\originalmedicalimgs\16\imgs\fl'
     # dst_folder =r'D:\test_imgs\fl'
     # sampling(src_folder,dst_folder,sep=4)
+
+    #
+    # label_path = r'F:\workspace\医院数据\arranged\guiyan\label\20180321_085515_84.txt'
+    # print(_default_sampling(label_path))
+    # extract_imgs_from_vido(r'F:\workspace\医院数据\arranged\guiyan\20180321_085515_84.wmv',label_path,r'F:\workspace\医院数据\arranged\guiyan\tmp')
