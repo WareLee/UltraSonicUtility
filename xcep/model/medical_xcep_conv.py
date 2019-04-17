@@ -8,7 +8,7 @@ from keras.metrics import categorical_accuracy
 # from keras.utils import plot_model
 from keras.preprocessing.image import ImageDataGenerator
 from keras.callbacks import ModelCheckpoint,TensorBoard
-from keras.layers import Conv2D, GlobalAveragePooling2D, Reshape,Softmax
+from keras.layers import Conv2D, GlobalAveragePooling2D, Reshape
 from keras.models import Model, Sequential
 import cv2
 
@@ -60,9 +60,8 @@ base_model = Xception(include_top=False, weights=weights, input_shape=(None, Non
 top_model = Sequential()
 top_model.add(GlobalAveragePooling2D())
 top_model.add(Reshape(target_shape=(1, 1, 2048)))
-top_model.add(Conv2D(filters=classes, kernel_size=(1, 1)))
+top_model.add(Conv2D(filters=classes, kernel_size=(1, 1),activation='softmax'))
 top_model.add(Reshape(target_shape=(classes,)))
-top_model.add(Softmax())
 model = Model(inputs=base_model.input, outputs=top_model(base_model.output))
 # plot
 print(model.summary())
